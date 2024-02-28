@@ -1,0 +1,160 @@
+import static java.lang.Thread.sleep;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.JOptionPane;
+
+Change Variable Name Menu:
+Beranda		Transaksi
+Login		Penjualan
+Register	Laporan
+Logout		Tentang
+Master
+Produk
+Pelanggan
+
+Change Variable Name Label: 
+lblUser
+
+Change Variable Name Text Field/Password Field & Combo Box:
+txtJam
+txtTanggal
+txtUsername
+txtPassword
+cmbAkses
+
+Change Variable Name Button:
+btnMasuk	btnProduk
+btnBatal	btnPelanggan
+btnRegister	btnPenjualan
+
+Change Variable Name Internal Frame:
+FormLogin
+
+public class MenuUtama extends...........
+Connection konek;
+PreparedStatement pst;
+ResultSet rst;
+
+Di dalam initComponents:
+this.setExtendedState(MAXIMIZED_BOTH);
+konek = Koneksi.koneksiDB();
+mulai();
+tampilWaktu();
+
+
+public void mulai() {
+FormLogin.setVisible(false);
+Register.setEnabled(false);
+Logout.setEnabled(false);
+Master.setEnabled(false);
+Transaksi.setEnabled(false);
+Laporan.setEnabled(false);
+txtJam.setEnabled(false);
+txtTanggal.setEnabled(false);
+btnRegister.setEnabled(false);
+btnProduk.setEnabled(false);
+btnPelanggan.setEnabled(false);
+btnPenjualan.setEnabled(false);
+}
+
+public void tampilWaktu() {
+        Thread clock = new Thread() {
+            public void run() {
+                for(;;) {
+                    Calendar cal = Calendar.getInstance();
+                    SimpleDateFormat Jam = new SimpleDateFormat("HH:mm:ss");
+                    SimpleDateFormat Tanggal = new SimpleDateFormat("yyyy-MM-dd");
+                    txtJam.setText(Jam.format(cal.getTime()));
+                    txtTanggal.setText(Tanggal.format(cal.getTime()));
+               try { sleep(1000);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(MenuUtama.class.getName()).log(Level.SEVERE, null, ex);
+            }
+                }
+            }
+        };
+        clock.start();
+    }
+
+
+
+Tiap Menu Item (Login, Register, Logout, Produk, Pelanggan, Penjualan)
+klik kanan - Events - Action - actionPerformed 
+Login: FormLogin.setVisible(true);
+Register: new FormRegister().setVisible(true);
+Logout: new MenuUtama().setVisible(true);
+Produk: new FormProduk().setVisible(true);
+Pelanggan: new FormPelanggan().setVisible(true);
+Penjualan: new FormPenjualan().setVisible(true);
+
+coding btnRegister: new FormRegister().setVisible(true);
+coding btnProduk: new FormProduk().setVisible(true);
+coding btnPelanggan: new FormPelanggan().setVisible(true);
+coding btnPenjualan: new FormPenjualan().setVisible(true);
+coding btnBatal: new MenuUtama().setVisible(true);
+coding btnMasuk:
+try {
+    String sql="select * from login where Username='"+txtUsername.getText()+"' and Password='"+txtPassword.getText()+"' and HakAkses='"+cmbAkses.getSelectedItem()+"'";
+    pst = konek.prepareStatement(sql);
+    rst = pst.executeQuery();
+    if (rst.next()) {
+        if(txtUsername.getText().equals(rst.getString("Username"))&& txtPassword.getText().equals(rst.getString("Password"))&& cmbAkses.getSelectedItem().equals(rst.getString("HakAkses")))
+            if(cmbAkses.getSelectedItem().equals("Admin")){
+                    Register.setEnabled(true);
+                    Logout.setEnabled(true);
+                    Master.setEnabled(true);
+                    Produk.setEnabled(true);
+                    Pelanggan.setEnabled(true);
+                    Transaksi.setEnabled(true);
+                    Penjualan.setEnabled(true);
+                    Laporan.setEnabled(true);
+                    FormLogin.setVisible(false);
+                    btnRegister.setEnabled(true);
+                    btnProduk.setEnabled(true);
+                    btnPelanggan.setEnabled(true);
+                    btnPenjualan.setEnabled(true);
+                    txtJam.setEnabled(false);
+                    txtTanggal.setEnabled(false);
+                } else if(cmbAkses.getSelectedItem().equals("Petugas")){
+                    Register.setEnabled(false);
+                    Logout.setEnabled(true);
+                    Master.setEnabled(true);
+                    Produk.setEnabled(true);
+                    Pelanggan.setEnabled(true);
+                    Transaksi.setEnabled(true);
+                    Penjualan.setEnabled(true);
+                    Laporan.setEnabled(true);
+                    FormLogin.setVisible(false);
+                    btnRegister.setEnabled(false);
+                    btnProduk.setEnabled(true);
+                    btnPelanggan.setEnabled(true);
+                    btnPenjualan.setEnabled(true);
+                    txtJam.setEnabled(false);
+                    txtTanggal.setEnabled(false);
+                }
+        {
+            JOptionPane.showMessageDialog(null, "Selamat Datang '"+txtUsername.getText()+"'");
+            String text = txtUsername.getText();
+            lblUser.setText(text);
+        }
+    } else {
+        JOptionPane.showMessageDialog(null, "Gagal Login. Periksa kembali Username, Password dan Hak Akses");
+        txtUsername.setText("");
+        txtPassword.setText("");
+        cmbAkses.setSelectedItem("-Pilih Salah Satu-");
+    }
+} catch (Exception e) {
+    JOptionPane.showMessageDialog(null, e);
+}
+
+
+
+
+
+
+

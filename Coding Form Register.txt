@@ -1,0 +1,51 @@
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import javax.swing.JOptionPane;
+import net.proteanit.sql.DbUtils;
+
+public class FormRegister extends..........
+Connection konek;
+PreparedStatement pst;
+ResultSet rst;
+
+public FormRegister() {
+    initComponents();
+    this.setLocationRelativeTo(null);
+    konek = Koneksi.koneksiDB();
+}
+
+private void clear() {
+txtIdLogin.setText("");
+txtUsername.setText("");
+txtPassword.setText("");
+cmbAkses.setSelectedItem("-Pilih Salah Satu-")
+}
+
+private void simpan() {
+try {
+  String sql = "insert into login(LoginID,Username,Password,HakAkses) value (?,?,?,?)";
+  pst = konek.prepareStatement(sql);
+  pst.setString(1, txtIdLogin.getText());
+  pst.setString(2, txtUsername.getText());
+  pst.setString(3, txtPassword.getText());
+  pst.setString(4, (String) cmbAkses.getSelectedItem());
+  pst.execute();
+  JOptionPane.showMessageDialog(null, "Data Berhasil Disimpan");  
+} catch (Exception e) {
+  JOoptionPane.showMessageDialog(null, "Data Gagal Disimpan");
+}
+}
+
+
+Tombol Simpan:
+simpan();
+clear();
+
+
+Tombol Batal:
+new MenuUtama().setVisible(true);
+this.dispose();
+
+
+

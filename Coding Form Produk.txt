@@ -1,0 +1,113 @@
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import javax.swing.JOptionPane;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import net.proteanit.sql.DbUtils;
+
+
+Connection konek;
+PreparedStatement pst;
+ResultSet rst;
+
+initComponents() {
+konek = Koneksi.koneksiDB();
+}
+
+public void mulai() {
+  txtIdProduk.setText("");
+  txtNmProduk.setText("");
+  txtHarga.setText("");
+  txtStok.setText("");
+}
+    
+    
+    public void updateTabel() {
+        try {
+            String sql = "select * from produk";
+            pst = konek.prepareStatement(sql);
+            rst = pst.executeQuery();
+            tblProduk.setModel(DbUtils.resultSetToTableModel(rst));
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Tidak terkoneksi ke tabel di database");
+        }
+    }
+    
+    
+    private void simpan() {
+        try {
+            String sql = "insert into produk(ProdukID,NamaProduk,Harga,Stok) value (?,?,?,?)";
+            pst = konek.prepareStatement(sql);
+            pst.setString(1, txtIdProduk.getText());
+            pst.setString(2, txtNmProduk.getText());
+            pst.setString(3, txtHarga.getText());
+            pst.setString(4, txtStok.getText());
+            pst.execute();
+            JOptionPane.showMessageDialog(null, "Data Sudah Disimpan");
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Data Gagal Disimpan");
+        }
+	updateTabel();
+    }
+   
+
+Tombol Simpan:
+simpan();
+mulai();
+
+Tombol Edit:
+try {
+    String idproduk = txtIdProduk.getText();
+    String namaproduk = txtNmProduk.getText();
+    String harga = txtHarga.getText();
+    String stok = txtStok.getText();
+    
+    String sql = "update produk set NamaProduk='"+namaproduk+"', Harga='"+harga+"', Stok='"+stok+"' where ProdukID='"+idproduk+"'";
+    pst = konek.prepareStatement(sql);
+    pst.execute();
+    JOptionPane.showMessageDialog(null, "Data Berhasil Diupdate");
+} catch (Exception e) {
+    JOptionPane.showMessageDialog(null, "Data Gagal Diupdate");
+}
+updateTabel();
+mulai();
+
+Tombol Hapus:
+try {
+    String sql = "delete from produk where ProdukID=?";
+    pst = konek.prepareStatement(sql);
+    pst.setString(1, txtIdProduk.getText());
+    pst.execute();
+    JOptionPane.showMessageDialog(null, "Data Berhasil Disimpan");
+} catch (Exception e) {
+    JOptionPane.showMessageDialog(null, "Data Gagal Dihapus");
+}
+updateTabel();
+mulai();
+
+Tombol Keluar:
+dispose();
+
+Tbl MouseClicked:
+try {
+    int baris = tblProduk.getSelectedRow();
+    String tabelKlik = (tblProduk.getModel().getValueAt(baris, 0).toString());
+    String sql = "select * from produk where ProdukID='"+tabelKlik+"'";
+    pst = konek.prepareStatement(sql);
+    rst = pst.executeQuery();
+    if (rst.next()) {
+        String idproduk = rst.getString(("ProdukID"));
+        txtIdProduk.setText(idproduk);
+        String namaproduk = rst.getString(("NamaProduk"));
+        txtNmProduk.setText(namaproduk);
+        String harga = rst.getString(("Harga"));
+        txtHarga.setText(harga);
+        String stok = rst.getString(("Stok"));
+        txtStok.setText(stok);
+    }
+} catch (Exception e) {
+    JOptionPane.showMessageDialog(null, "Tidak terkoneksi ke Tabel di Database");
+}
+
+

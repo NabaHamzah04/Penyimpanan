@@ -1,0 +1,263 @@
+import static java.lang.Thread.sleep;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableModel;
+import net.proteanit.sql.DbUtils;
+import java.util.Date;
+
+
+	
+
+initComponents() {
+konek = Koneksi.KoneksiDB();
+this.setLocationRelativeTo(null);
+detail();
+tampilWaktu();
+autonumber();
+penjumlahan();
+}
+
+private void simpan(){
+        String tgl=txtTanggal.getText();
+        String jam=txtJam.getText();
+      try {
+            String sql="insert into tbl_penjualan (PenjualanID,DetailID,TanggalPenjualan,JamPenjualan,TotalHarga) value (?,?,?,?,?)";
+            pst=konek.prepareStatement(sql);
+            pst.setString(1, txtIdPenjualan.getText());
+            pst.setString(2, iddetail);
+            pst.setString(3, tgl);
+            pst.setString(4, jam);
+            pst.setString(5, txtTotal.getText());
+            pst.execute();
+            JOptionPane.showMessageDialog(null, "Data Tersimpan");
+        } catch (Exception e){
+            JOptionPane.showMessageDialog(null, e);
+            }
+    }
+    
+    private void total(){
+    int total, bayar, kembali;
+        total= Integer.parseInt(txtBayar.getText());
+        bayar= Integer.parseInt(txtTotal.getText());
+        kembali=total-bayar;
+        String ssub=String.valueOf(kembali);
+        txtKembalian.setText(ssub);
+    }
+    
+    public void clsr(){
+    txtJumlah.setText("");
+    }
+    
+    public void cari(){
+    try {
+        String sql="select * from tbl_produk where ProdukID LIKE '%"+txtIdProduk.getText()+"%'";
+        pst=konek.prepareStatement(sql);
+        rst=pst.executeQuery();
+        tblProduk.setModel(DbUtils.resultSetToTableModel(rst));
+       } catch (Exception e){ JOptionPane.showMessageDialog(null, e);} 
+    }
+    
+    public void kurangi_stok(){
+    int qty;
+    qty=Integer.parseInt(txtJumlah.getText());
+    kurangistok=inputstok-qty;
+    }
+    
+    private void subtotal(){
+    int jumlah, sub;
+         jumlah= Integer.parseInt(txtJumlah.getText());
+         sub=(jumlah*inputharga);
+         sub_total=String.valueOf(sub);     
+    }
+    
+    public void tambah_stok(){
+    tambahstok=inputjumlah+inputstok2;
+        try {
+        String update="update tbl_produk set Stok='"+tambahstok+"' where ProdukID='"+idproduk+"'";
+        pst2=konek.prepareStatement(update);
+        pst2.execute();
+        }catch (Exception e){
+            JOptionPane.showMessageDialog(null, e);}
+    }
+    
+    public void ambil_stock(){
+    try {
+    String sql="select * from tbl_produk where ProdukID='"+idproduk+"'";
+    pst=konek.prepareStatement(sql);
+    rst=pst.executeQuery();
+    if (rst.next()) {    
+    String stok=rst.getString(("Stok"));
+    inputstok2= Integer.parseInt(stok);
+    }
+    }catch (Exception e) {
+    JOptionPane.showMessageDialog(null, e);}
+    }
+    
+    public void penjumlahan(){
+        int totalBiaya = 0;
+        int subtotal;
+        DefaultTableModel dataModel = (DefaultTableModel) tblPenjualan.getModel();
+        int jumlah = tblPenjualan.getRowCount();
+        for (int i=0; i<jumlah; i++){
+        subtotal = Integer.parseInt(dataModel.getValueAt(i, 4).toString());
+        totalBiaya += subtotal;
+        }
+        txtTotal.setText(String.valueOf(totalBiaya));
+    }
+    
+    public void autonumber(){
+    try{
+        String sql = "SELECT MAX(RIGHT(PenjualanID,3)) AS NO FROM tbl_penjualan";
+        pst=konek.prepareStatement(sql);
+        rst=pst.executeQuery();
+        while (rst.next()) {
+                if (rst.first() == false) {
+                    txtIdPenjualan.setText("IDP001");
+                } else {
+                    rst.last();
+                    int auto_id = rst.getInt(1) + 1;
+                    String no = String.valueOf(auto_id);
+                    int NomorJual = no.length();
+                    for (int j = 0; j < 3 - NomorJual; j++) {
+                        no = "0" + no;
+                    }
+                    txtIdPenjualan.setText("IDP" + no);
+                }
+            }
+        rst.close();
+        }catch (Exception e){
+            JOptionPane.showMessageDialog(null, e);}
+    }
+    
+    public void detail(){
+    try {
+        String Kode_detail=txtIdPenjualan.getText();
+        String KD="D"+Kode_detail;
+        String sql="select * from tbl_detailpenjualan where DetailID='"+KD+"'";
+        pst=konek.prepareStatement(sql);
+        rst=pst.executeQuery();
+        tblPenjualan.setModel(DbUtils.resultSetToTableModel(rst));
+       } catch (Exception e){ 
+           JOptionPane.showMessageDialog(null, e);} 
+    }
+    
+    public void tampilJam(){
+    Thread clock=new Thread(){
+        public void run(){
+            for(;;){
+                Calendar cal=Calendar.getInstance();
+                SimpleDateFormat format=new SimpleDateFormat("HH:mm:ss");
+                SimpleDateFormat format2=new SimpleDateFormat("yyyy-MM-dd");
+                txtJam.setText(format.format(cal.getTime()));
+                 txtTanggal.setText(format2.format(cal.getTime()));
+                
+            try { sleep(1000);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(FormPenjualan.class.getName()).log(Level.SEVERE, null, ex);
+            }
+          }
+        }
+      };
+    clock.start();
+    }
+
+
+Tombol CARI:
+cari();
+
+
+Tombol TAMBAH:
+	subtotal();
+        kurangi_stok();
+        try {
+            String Kode_detail=txtIdPenjualan.getText();
+            iddetail="D"+Kode_detail;
+            String sql="insert into tbl_detailpenjualan (DetailID,ProdukID,Harga,JumlahProduk,Subtotal) value (?,?,?,?,?)";
+            String update="update tbl_produk set Stok='"+kurangistok+"' where ProdukID='"+idproduk+"'";
+            pst=konek.prepareStatement(sql);
+            pst2=konek.prepareStatement(update);
+            pst.setString(1, iddetail);
+            pst.setString(2, idproduk);
+            pst.setString(3, harga);
+            pst.setString(4, txtJumlah.getText());
+            pst.setString(5, sub_total);
+            pst.execute();
+            pst2.execute();
+        } catch (Exception e){
+            JOptionPane.showMessageDialog(null, e);
+            }
+        detail();
+        penjumlahan();
+        cari();
+        clsr();
+
+Tombol HAPUS:
+	try {
+            String sql="delete from tbl_detailpenjualan where ProdukID=?";
+            pst=konek.prepareStatement(sql);
+            pst.setString(1, idprodukpenjualan);
+            pst.execute();
+        }catch (Exception e){
+            JOptionPane.showMessageDialog(null, e);
+        }
+        detail();
+        penjumlahan();
+        tambah_stok();
+        cari();
+
+Tombol BAYAR:
+     total();
+     simpan();
+     autonumber();
+     detail();
+     txtTotal.setText("");
+     txtBayar.setText("");
+     txtKembalian.setText("");
+     txtIdProduk.setText("");
+     cari();
+
+Tombol KELUAR:
+this.dispose();
+
+
+Tabel1 MouseClicked:
+try {
+    int row=tblProduk.getSelectedRow();
+    String tabel_klik=(tblProduk.getModel().getValueAt(row, 0).toString());
+    String sql="select * from tbl_produk where ProdukID='"+tabel_klik+"'";
+    pst=konek.prepareStatement(sql);
+    rst=pst.executeQuery();
+    if (rst.next()) {
+    idproduk=rst.getString(("ProdukID"));    
+    String stok=rst.getString(("Stok"));
+    inputstok= Integer.parseInt(stok);
+    harga=rst.getString(("Harga"));
+    inputharga= Integer.parseInt(harga);
+    }
+}catch (Exception e) {
+    JOptionPane.showMessageDialog(null, e);
+}
+
+
+Tabel2 MouseClicked:
+try {
+    int row=tblPenjualan.getSelectedRow();
+    idprodukpenjualan=(tblPenjualan.getModel().getValueAt(row, 1).toString());
+    String sql="select * from tbl_detailpenjualan where ProdukID='"+idprodukpenjualan+"'";
+    pst=konek.prepareStatement(sql);
+    rst=pst.executeQuery();
+    if (rst.next()) {   
+    String jumlah=rst.getString(("JumlahProduk"));
+    inputjumlah= Integer.parseInt(jumlah);
+    }
+}catch (Exception e) {
+    JOptionPane.showMessageDialog(null, e);
+}
+ambil_stock();
